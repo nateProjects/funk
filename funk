@@ -1,0 +1,103 @@
+#!/bin/bash
+
+# Create the functions directory if it doesn't exist 
+mkdir -p "$HOME/.funk"
+
+# Define the file for custom functions
+FUNK_FILE="$HOME/.funk/functions"
+
+# Function to list available functions
+function list_functions() {
+    if [ -f "$FUNK_FILE" ]; then
+        cat "$FUNK_FILE" | awk '{print $1, $2, $3}'
+    else
+        echo "No functions created with Funk. Use 'funk add' to create one."
+    fi
+}
+
+# Function to add a new function
+function add_function() {
+    local name="$1"
+    local command="$2"
+    local description="$3"
+    local confirm="$4"
+
+    if [ -z "$name" ] || [ -z "$command" ]; then
+        echo "Usage: funk add name 'command' 'description' confirm?"
+        return
+    fi
+
+    echo "Adding function: $name - $command - $description"
+
+# Write the function to the functions file
+    echo "function $name() {" >> "$FUNK_FILE"
+
+  if [[ "$confirm" == "y" ]]; then
+    echo -e "\tread -p \"$name - $description - are you sure? (y/N) \" prompt" >> "$FUNK_FILE"
+    echo -e "\tif [[ \"\$prompt\" != \"y\" ]]; then return; fi" >> "$FUNK_FILE"
+  fi
+
+    echo "    $command" >> "$FUNK_FILE"
+    echo "}" >> "$FUNK_FILE"
+    echo "# $description" >> "$FUNK_FILE"
+
+    echo "Function added successfully. Sourced from $FUNK_FILE."
+    source "$FUNK_FILE" || return # use "return" to exit the function and not the script
+}
+
+# Function to delete a function
+function delete_function() {
+    local name="$1"
+
+    if [ -z "$name" ]; then
+        echo "Usage: funk del name"
+        return
+    fi
+
+    sed -i "/^function $name\(\)/,/^# /d" "$FUNK_FILE"
+    echo "Function $name deleted successfully. Sourced from $FUNK_FILE."
+    source "$FUNK_FILE" || return  # use "return" to exit the function and not the script
+}
+
+# Function to edit functions
+function edit_functions() {
+    if [ -f "$FUNK_FILE" ]; then
+        $EDITOR "$FUNK_FILE"
+    else
+        echo "No functions created with Funk. Use 'funk add' to create one."
+    fi
+}
+
+# Function to display help instructions
+function show_help() {
+    echo "Funk - Custom function maker / manager"
+    echo "Usage:"
+    echo "  funk - list functions created with this tool (or show instructions if none)"
+    echo "  funk add name 'command' 'description' confirm?"
+    echo "    eg. funk add duh 'du -h' 'human disk usage' y"
+    echo "      - will bring up duh - human disk usage - are you sure?"
+    echo "      - without the 'y', won't ask if you are sure, but just run it"
+    echo "      - in either case, it will source $HOME/.funk/functions so it is available"
+    echo "  funk del name"
+    echo "  funk edit - call default editor to edit $HOME/.funk/functions"
+    echo "  funk help - show instructions"
+}
+
+# Main script logic
+case "$1" in
+    "add")
+        add_function "$2" "$3" "$4" "$5"
+        ;;
+    "del")
+        delete_function "$2"
+        ;;
+    "edit")
+        edit_functions
+        ;;
+    "help")
+        show_help
+        ;;
+    *)
+        list_functions
+        ;;
+esac
