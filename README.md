@@ -19,6 +19,7 @@ eg. add duh 'du -h' 'human disk usage' y - will bring up duh - human disk usage 
 ## To Do
 
 if not there add to .bashrc (or .zshrc) -
-source "$HOME/.funk/functions"
+
+`source "$HOME/.funk/functions"`
 
 Stop it allowing duplicate functions with the same name
