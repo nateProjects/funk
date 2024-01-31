@@ -22,4 +22,6 @@ if not there add to .bashrc (or .zshrc) -
 
 `source "$HOME/.funk/functions"`
 
+`chmod +x funk` & move to an accessible path
+
 Stop it allowing duplicate functions with the same name
